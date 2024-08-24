@@ -1,4 +1,4 @@
-import { Controller, ForbiddenException, Get, NotFoundException, Param, Patch, UsePipes, ValidationPipe } from "@nestjs/common"
+import { Controller, Delete, ForbiddenException, Get, NotFoundException, Param, Patch, UsePipes, ValidationPipe } from "@nestjs/common"
 import { UsersService } from "./users.service"
 import { EmailDto } from "../common/dto/email.dto"
 import { User } from "../common/decorators/user.decorator"
@@ -49,5 +49,12 @@ export class UsersController {
   @Patch(":email")
   async addScoutToGroup(@Param() params: EmailDto, @User() { email: foremanEmail }: JwtPayloadDto) {
     return await this.userService.addScoutToGroup(params.email, foremanEmail)
+  }
+
+  @UsePipes(new ValidationPipe())
+  @Roles(Role.FOREMAN)
+  @Delete(":email")
+  async removeScoutFromGroup(@Param() params: EmailDto, @User() { email: foremanEmail }: JwtPayloadDto) {
+    await this.userService.removeScoutFromGroup(params.email, foremanEmail)
   }
 }

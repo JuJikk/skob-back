@@ -33,7 +33,7 @@ export class UsersService {
     if (!scout) {
       throw new NotFoundException(`Scout with email ${scoutEmail} not found`)
     }
-    if (scout.ownerEmail) {
+    if (scout?.ownerEmail) {
       throw new BadRequestException(`Scout with email ${scoutEmail} already have a group`)
     }
     if (scout.roles.includes(Role.FOREMAN)) {
@@ -44,5 +44,18 @@ export class UsersService {
       throw new BadRequestException(`Invalid data`)
     }
     return null
+  }
+
+  public async removeScoutFromGroup(scoutEmail: string, foremanEmail: string) {
+    const scout = await this.usersRepository.findOne({ where: { email: scoutEmail } })
+    if (!scout) {
+      throw new NotFoundException(`Scout with email ${scoutEmail} not found`)
+    }
+
+    if (scout?.ownerEmail !== foremanEmail) {
+      throw new BadRequestException(`This Scout is not in your group`)
+    }
+
+    await this.usersRepository.updateOne({ email: scoutEmail }, { $unset: { ownerEmail: "" } })
   }
 }
