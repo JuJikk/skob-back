@@ -17,7 +17,7 @@ export class AuthController {
     const oneDayInMilliseconds = 24 * 60 * 60 * 1000
     const expires = new Date(Date.now() + oneDayInMilliseconds)
 
-    response.cookie("__skob_jwt", __skob_jwt)
+    response.cookie("__skob_jwt", __skob_jwt, { secure: true, httpOnly: true, expires: expires, maxAge: oneDayInMilliseconds })
   }
 
   @UsePipes(new ValidationPipe())
@@ -27,13 +27,13 @@ export class AuthController {
     const oneDayInMilliseconds = 24 * 60 * 60 * 1000
     const expires = new Date(Date.now() + oneDayInMilliseconds)
 
-    response.cookie("__skob_jwt", __skob_jwt)
+    response.cookie("__skob_jwt", __skob_jwt, { secure: true, httpOnly: true, expires: expires, maxAge: oneDayInMilliseconds })
   }
 
   @Get("logout")
   async logout(@Res({ passthrough: true }) response: Response) {
     const oneDayInMilliseconds = 24 * 60 * 60 * 1000
     const pastDate = new Date(Date.now() - oneDayInMilliseconds)
-    response.cookie("__skob_jwt", "")
+    response.cookie("__skob_jwt", "", { secure: true, httpOnly: true, expires: pastDate, maxAge: 0 })
   }
 }
