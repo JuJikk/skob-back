@@ -6,6 +6,9 @@ import * as process from "node:process"
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
+  app.enableCors({
+    origin: process.env.FRONTEND_BASE_URL,
+  })
   app.use(cookieParser(process.env.COOKIE_SECRET))
   await app.listen(3000)
 }
