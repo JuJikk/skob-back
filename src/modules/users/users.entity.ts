@@ -8,6 +8,8 @@ export class User {
   @Column() ownerEmail: string
   @Column() email: string
   @Column() name: string
+  @Column() provider: string
+  @Column() picture: string
   @Column() sex: Sex
   @Column() roles: Role[] = [Role.SCOUTER]
   @Column() zeroProba = { a: Array(11).fill(0) }
