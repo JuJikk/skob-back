@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsString, Max, Min } from "class-validator";
+import { IsIn, IsInt, IsString, Max, Min } from "class-validator"
 
 type ProbaName = "zeroProba" | "firstProba" | "secondProba"
 
