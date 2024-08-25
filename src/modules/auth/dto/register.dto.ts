@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsString, IsStrongPassword, Length } from "class-validator"
+import { IsEmail, IsEnum, IsString, Length } from "class-validator"
 import { Sex } from "../../common/enums/sex.enum"
 
 export class RegisterDto {
@@ -9,7 +9,7 @@ export class RegisterDto {
   @IsEmail()
   email: string
 
-  @IsStrongPassword()
+  @IsString()
   password: string
 
   @IsEnum(Sex)
