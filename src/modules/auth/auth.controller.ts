@@ -5,6 +5,7 @@ import { RegisterDto } from "./dto/register.dto"
 import { Public } from "../common/decorators/public.decorator"
 import { Response } from "express"
 import { AuthGuard } from "@nestjs/passport"
+import * as process from "node:process";
 
 @Public()
 @Controller("auth")
@@ -23,6 +24,7 @@ export class AuthController {
     const expires = new Date(Date.now() + oneDayInMilliseconds)
 
     response.cookie("__skob_jwt", token, { secure: true, httpOnly: true, expires: expires, maxAge: oneDayInMilliseconds })
+    response.redirect(process.env.FRONTEND_BASE_URL ?? "http://localhost:3000")
   }
 
   @UsePipes(new ValidationPipe())
