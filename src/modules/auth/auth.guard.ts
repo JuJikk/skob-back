@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common"
+import { CanActivate, ExecutionContext, Injectable, Logger, UnauthorizedException } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import { Reflector } from "@nestjs/core"
 import { IS_PUBLIC_KEY } from "../common/decorators/public.decorator"
@@ -10,6 +10,8 @@ export class AuthGuard implements CanActivate {
     private jwtService: JwtService,
     private reflector: Reflector
   ) {}
+
+  private readonly logger = new Logger(AuthGuard.name)
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()])
@@ -23,12 +25,14 @@ export class AuthGuard implements CanActivate {
     this.extractTokenFromCookies(req)
 
     if (!jwt_token) {
+      this.logger.log(`token missing`)
       throw new UnauthorizedException()
     }
 
     try {
       req["user"] = await this.jwtService.verifyAsync(jwt_token, { secret: "secret" })
     } catch {
+      this.logger.log(`${jwt_token} not verified`)
       throw new UnauthorizedException()
     }
     return true

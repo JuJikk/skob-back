@@ -1,4 +1,4 @@
-import { Controller, Delete, ForbiddenException, Get, NotFoundException, Param, Patch, UsePipes, ValidationPipe } from "@nestjs/common"
+import { Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, Patch, UsePipes, ValidationPipe } from "@nestjs/common"
 import { UsersService } from "./users.service"
 import { EmailDto } from "../common/dto/email.dto"
 import { User } from "../common/decorators/user.decorator"
@@ -11,8 +11,11 @@ import { UserDto } from "./dto/user.dto"
 export class UsersController {
   constructor(private userService: UsersService) {}
 
+  private readonly logger = new Logger(UsersController.name)
+
   @Get("me")
   async getMyAccount(@User() { email }: JwtPayloadDto) {
+    this.logger.log("GET: /users/me")
     const user = await this.userService.getUserByEmail(email)
     if (!user) {
       throw new NotFoundException(`User not found`)
@@ -24,6 +27,7 @@ export class UsersController {
   @UsePipes(new ValidationPipe())
   @Get(":email")
   async getUserByEmail(@Param() params: EmailDto, @User() { email: userEmail }: JwtPayloadDto) {
+    this.logger.log("GET: /users/:email")
     const user = await this.userService.getUserByEmail(params.email)
     if (!user) {
       throw new NotFoundException(`User not found with email ${params.email} not found.`)
@@ -37,6 +41,7 @@ export class UsersController {
   @Get("scouts/all")
   @Roles(Role.FOREMAN)
   async getAllScoutsByForemanEmail(@User() { email }: JwtPayloadDto) {
+    this.logger.log("GET: /users/scouts/all")
     const scouts = await this.userService.getAllScoutsByForemanEmail(email)
     if (!scouts || !scouts.length) {
       throw new NotFoundException(`Foreman does not have scouts`)
@@ -48,6 +53,7 @@ export class UsersController {
   @Roles(Role.FOREMAN)
   @Patch(":email")
   async addScoutToGroup(@Param() params: EmailDto, @User() { email: foremanEmail }: JwtPayloadDto) {
+    this.logger.log("PATCH: /users/:email")
     return await this.userService.addScoutToGroup(params.email, foremanEmail)
   }
 
@@ -55,6 +61,7 @@ export class UsersController {
   @Roles(Role.FOREMAN)
   @Delete(":email")
   async removeScoutFromGroup(@Param() params: EmailDto, @User() { email: foremanEmail }: JwtPayloadDto) {
+    this.logger.log("DELETE: /users/:email")
     await this.userService.removeScoutFromGroup(params.email, foremanEmail)
   }
 }
