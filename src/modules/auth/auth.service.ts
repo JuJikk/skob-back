@@ -15,7 +15,7 @@ export class AuthService {
 
   async googleAuthenticate(user: User) {
     if (!user || user.provider !== "google") {
-      throw new UnauthorizedException("Unauthenticated")
+      throw new UnauthorizedException("the account with this email address was not registered through Google")
     }
 
     const userDb = await this.usersService.getUserByEmail(user.email)
@@ -34,7 +34,7 @@ export class AuthService {
       throw new UnauthorizedException(`Invalid email or password`)
     }
     if (user.provider === "google") {
-      throw new BadRequestException("Looks like you use another sign up method")
+      throw new BadRequestException("It looks like you used a different authorization method")
     }
 
     const isMatch = await bcrypt.compare(loginDto.password, user.password)
