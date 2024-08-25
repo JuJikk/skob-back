@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm"
 import { User } from "../users/users.entity"
 import { MongoRepository } from "typeorm"
 import { UpdateProbasDto } from "./dto/update.probas.dto"
+import { UpdateEntireProbasDto } from "./dto/update.entire.probas.dto";
 
 @Injectable()
 export class ProbasService {
@@ -19,23 +20,7 @@ export class ProbasService {
 
     const { probaName, probaSubName, probaIndex } = probaDto
 
-    const isZeroProbaIncomplete = this.containsZero(scout.zeroProba)
-    const isFirstProbaIncomplete = this.containsZero(scout.firstProba)
-
-    if (probaName === "secondProba") {
-      if (isZeroProbaIncomplete) {
-        throw new BadRequestException("Zero Proba is not complete")
-      }
-      if (isFirstProbaIncomplete) {
-        throw new BadRequestException("First Proba is not complete")
-      }
-    }
-
-    if (probaName === "firstProba") {
-      if (isZeroProbaIncomplete) {
-        throw new BadRequestException("Zero Proba is not complete")
-      }
-    }
+    this.validateCanUpdateProba(scout, probaDto.probaName)
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-expect-error
@@ -57,7 +42,44 @@ export class ProbasService {
     return null
   }
 
+  public async updateEntireProba(scoutEmail: string, foremanEmail: string, probaDto: UpdateEntireProbasDto) {
+    const scout = await this.usersRepository.findOne({ where: { email: scoutEmail } })
+    if (scout?.ownerEmail !== foremanEmail) {
+      throw new ForbiddenException(`No access to update a Scout's proba from another Foreman group`)
+    }
+
+    this.validateCanUpdateProba(scout, probaDto.probaName)
+
+    const probaToUpdate = scout[probaDto.probaName]
+
+    for (const key in probaToUpdate) {
+      if (probaToUpdate.hasOwnProperty(key)) {
+        await this.usersRepository.updateMany({ email: scoutEmail }, { $set: { [`${probaDto.probaName}.${key}.$[]`]: probaDto.value } })
+      }
+    }
+  }
+
   private containsZero(obj: Record<string, number[]>): boolean {
     return Object.values(obj).some((array) => array.includes(0))
+  }
+
+  private validateCanUpdateProba(scout: User, probaName: string) {
+    const isZeroProbaIncomplete = this.containsZero(scout.zeroProba)
+    const isFirstProbaIncomplete = this.containsZero(scout.firstProba)
+
+    if (probaName === "secondProba") {
+      if (isZeroProbaIncomplete) {
+        throw new BadRequestException("Zero Proba is not complete")
+      }
+      if (isFirstProbaIncomplete) {
+        throw new BadRequestException("First Proba is not complete")
+      }
+    }
+
+    if (probaName === "firstProba") {
+      if (isZeroProbaIncomplete) {
+        throw new BadRequestException("Zero Proba is not complete")
+      }
+    }
   }
 }
