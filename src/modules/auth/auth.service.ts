@@ -1,9 +1,6 @@
-import { BadRequestException, Injectable, Logger, UnauthorizedException } from "@nestjs/common"
-import * as bcrypt from "bcrypt"
+import { Injectable, Logger, UnauthorizedException } from "@nestjs/common"
 import { UsersService } from "../users/users.service"
-import { LoginDto } from "./dto/login.dto"
 import { JwtService } from "@nestjs/jwt"
-import { RegisterDto } from "./dto/register.dto"
 import { User } from "../users/users.entity"
 
 @Injectable()
@@ -32,45 +29,6 @@ export class AuthService {
 
     this.logger.log(`${userDb.name} signed in successfully`)
     return await this.signToken(userDb)
-  }
-
-  async logIn(loginDto: LoginDto): Promise<{ token: string }> {
-    this.logger.log(`login with email ${loginDto.email}`)
-    const user = await this.usersService.getUserByEmail(loginDto.email)
-    if (!user) {
-      this.logger.log(`user with email ${loginDto.email} not found`)
-      throw new UnauthorizedException(`Invalid email or password`)
-    }
-    if (user.provider === "google") {
-      this.logger.log(`user with email ${loginDto.email} signup with wrong method`)
-      throw new BadRequestException("It looks like you used a different authorization method")
-    }
-
-    const isMatch = await bcrypt.compare(loginDto.password, user.password)
-    if (!isMatch) {
-      this.logger.log(`user with email ${loginDto.email} input wrong password`)
-      throw new UnauthorizedException("Invalid email or password")
-    }
-    this.logger.log(`user with email ${loginDto.email} signed in`)
-    return await this.signToken(user)
-  }
-
-  async register(registerDto: RegisterDto): Promise<{ token: string }> {
-    this.logger.log(`register with email ${registerDto.email}`)
-    const isEmailExist = await this.usersService.getUserByEmail(registerDto.email)
-    if (isEmailExist) {
-      this.logger.log(`${registerDto.email} is busy`)
-      throw new BadRequestException("This email address is already busy")
-    }
-
-    const encryptedPassword = await bcrypt.hash(registerDto.password, await bcrypt.genSalt())
-
-    const user = await this.usersService.createUser({
-      ...registerDto,
-      password: encryptedPassword,
-    })
-    this.logger.log(`${user.email} registered successfully`)
-    return await this.signToken(user)
   }
 
   private async signToken(user: User) {
