@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Req, Res, UseGuards } from "@nestjs/common"
+import { Controller, Get, Logger, Req, Res, ServiceUnavailableException, UseGuards } from "@nestjs/common"
 import { AuthService } from "./auth.service"
 import { Public } from "../common/decorators/public.decorator"
 import { Response } from "express"
@@ -8,9 +8,15 @@ import * as process from "node:process"
 @Public()
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {
+    this.FRONTEND_URL = process.env.FRONTEND_BASE_URL ?? ""
+    if (!this.FRONTEND_URL) {
+      throw new ServiceUnavailableException("FRONTEND_BASE_URL is missing")
+    }
+  }
 
   private readonly logger = new Logger(AuthController.name)
+  private readonly FRONTEND_URL: string
 
   @Get("google")
   @UseGuards(AuthGuard("google"))
@@ -25,7 +31,7 @@ export class AuthController {
     const expires = new Date(Date.now() + oneDayInMilliseconds)
 
     response.cookie("__skob_jwt", token, { secure: true, httpOnly: true, expires: expires, maxAge: oneDayInMilliseconds })
-    response.redirect(process.env.FRONTEND_BASE_URL ?? "http://localhost:5173")
+    response.redirect(this.FRONTEND_URL)
   }
 
   @Get("logout")

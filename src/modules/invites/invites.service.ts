@@ -65,7 +65,7 @@ export class InvitesService {
                   або вважаєте що лист прийшов вам помилково,
                   просто проігноруйте його.
                 </p>
-                <a href="${process.env.BACKEND_BACKEND_URL}/invites/${hashedValues}"><button>Прийняти запрошення</button></a>
+                <a href="${process.env.BACKEND_URL}/invites/${hashedValues}"><button>Прийняти запрошення</button></a>
                </div>`,
       }
 
