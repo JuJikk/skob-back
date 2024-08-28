@@ -1,9 +1,9 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common"
 import { User } from "./users.entity"
 import { InjectRepository } from "@nestjs/typeorm"
 import { MongoRepository } from "typeorm"
-import { RegisterDto } from "../auth/dto/register.dto"
 import { Role } from "../common/enums/role.enum"
+import { UpdateUserDto } from "./dto/update.user.dto"
 
 @Injectable()
 export class UsersService {
@@ -19,7 +19,7 @@ export class UsersService {
     return await this.usersRepository.findOne({ where: { email } })
   }
 
-  public async createUser(user: RegisterDto): Promise<User> {
+  public async createUser(user: User): Promise<User> {
     this.logger.log(`Creating user with email ${user.email}`)
     return await this.usersRepository.save(new User(user))
   }
@@ -70,5 +70,35 @@ export class UsersService {
     }
 
     await this.usersRepository.updateOne({ email: scoutEmail }, { $unset: { ownerEmail: "" } })
+  }
+
+  public async updateUser(updateUserDto: UpdateUserDto, userEmailToUpdate: string, requestUserEmail: string) {
+    this.logger.log(`Update user ${userEmailToUpdate}, by ${requestUserEmail}, with data: ${JSON.stringify(updateUserDto)}`)
+
+    if (!updateUserDto) {
+      this.logger.log(`updateUserDto is null`)
+      throw new BadRequestException(`Invalid payload`)
+    }
+
+    const userToUpdate = await this.getUserByEmail(userEmailToUpdate)
+    if (!userToUpdate) {
+      this.logger.log(`User ${userEmailToUpdate} not found`)
+      throw new NotFoundException(`User ${userEmailToUpdate} not found`)
+    }
+
+    const isSelfRequest = requestUserEmail === userEmailToUpdate
+    const isForemanRequest = requestUserEmail === userToUpdate.ownerEmail
+
+    if (!isSelfRequest && !isForemanRequest) {
+      this.logger.log(`User ${requestUserEmail} have no permission to update ${userEmailToUpdate} profile`)
+      throw new ForbiddenException(`You haven't permission to update ${userEmailToUpdate} profile`)
+    }
+
+    try {
+      return await this.usersRepository.save({ ...userToUpdate, ...updateUserDto })
+    } catch (error) {
+      this.logger.log(`Failed to update user ${userEmailToUpdate} profile`)
+      throw new InternalServerErrorException("Something went wrong, please try latter...")
+    }
   }
 }

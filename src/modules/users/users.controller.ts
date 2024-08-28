@@ -1,4 +1,4 @@
-import { Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, Patch, UsePipes, ValidationPipe } from "@nestjs/common"
+import { Body, Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, Patch, UsePipes, ValidationPipe } from "@nestjs/common"
 import { UsersService } from "./users.service"
 import { EmailDto } from "../common/dto/email.dto"
 import { User } from "../common/decorators/user.decorator"
@@ -6,6 +6,7 @@ import { JwtPayloadDto } from "../auth/dto/jwtpayload.dto"
 import { Roles } from "../common/decorators/roles.decorator"
 import { Role } from "../common/enums/role.enum"
 import { UserDto } from "./dto/user.dto"
+import { UpdateUserDto } from "./dto/update.user.dto"
 
 @Controller("users")
 export class UsersController {
@@ -21,6 +22,14 @@ export class UsersController {
       throw new NotFoundException(`User not found`)
     }
     return UserDto.toDto(user)
+  }
+
+  @UsePipes(new ValidationPipe())
+  @Patch("/:email")
+  async updateUser(@Param() params: EmailDto, @Body() updatePayload: UpdateUserDto, @User() { email: requestEmail }: JwtPayloadDto) {
+    this.logger.log("PATCH: /users/me")
+    const user = await this.userService.updateUser(updatePayload, params.email, requestEmail)
+    return UpdateUserDto.toDto(user)
   }
 
   @Roles(Role.FOREMAN)

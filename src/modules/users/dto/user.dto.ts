@@ -28,6 +28,9 @@ export class UserDto {
   @Expose()
   secondProba: any
 
+  @Expose()
+  picture: string
+
   static toDto(userEntity: User): UserDto {
     return plainToInstance(UserDto, userEntity, { excludeExtraneousValues: true })
   }
