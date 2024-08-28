@@ -27,7 +27,7 @@ export class AuthController {
     const expires = new Date(Date.now() + oneDayInMilliseconds)
 
     response.cookie("__skob_jwt", token, { secure: true, httpOnly: true, expires: expires, maxAge: oneDayInMilliseconds })
-    response.redirect(process.env.FRONTEND_BASE_URL ?? "http://localhost:3000")
+    response.redirect(process.env.FRONTEND_BASE_URL ?? "http://localhost:5173")
   }
 
   @UsePipes(new ValidationPipe())

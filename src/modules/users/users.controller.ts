@@ -51,14 +51,6 @@ export class UsersController {
 
   @UsePipes(new ValidationPipe())
   @Roles(Role.FOREMAN)
-  @Patch(":email")
-  async addScoutToGroup(@Param() params: EmailDto, @User() { email: foremanEmail }: JwtPayloadDto) {
-    this.logger.log("PATCH: /users/:email")
-    return await this.userService.addScoutToGroup(params.email, foremanEmail)
-  }
-
-  @UsePipes(new ValidationPipe())
-  @Roles(Role.FOREMAN)
   @Delete(":email")
   async removeScoutFromGroup(@Param() params: EmailDto, @User() { email: foremanEmail }: JwtPayloadDto) {
     this.logger.log("DELETE: /users/:email")
