@@ -8,6 +8,8 @@ import { InjectRepository } from "@nestjs/typeorm"
 import { MongoRepository } from "typeorm"
 import { Invite } from "./invites.entity"
 import * as process from "node:process"
+import * as fs from "fs"
+import * as handlebars from "handlebars"
 
 @Injectable()
 export class InvitesService {
@@ -53,20 +55,20 @@ export class InvitesService {
     }
 
     try {
+      const templateSource = fs.readFileSync("./templates/inviteTemplate.html", "utf8")
+      const template = handlebars.compile(templateSource)
+
+      const htmlToSend = template({
+        scoutName: scout.name,
+        foremanName: foreman.name,
+        invitationLink: `${process.env.BACKEND_URL}/invites/${hashedValues}`,
+      })
+
       const message = {
         to: scoutEmail,
         from: this.senderEmail,
-        subject: `Вас запрошено у групу виховника`,
-        html: `<div> 
-                <p>Привіт ${scout?.name}, у додатку Skob Proba
-                  вас було запрошено у групу виховника ${foreman?.name}.
-                  Щоб прийняти запрошення натисніть кнопку внизу.
-                  Якщо ви не знаєте цього виховника,
-                  або вважаєте що лист прийшов вам помилково,
-                  просто проігноруйте його.
-                </p>
-                <a href="${process.env.BACKEND_URL}/invites/${hashedValues}"><button>Прийняти запрошення</button></a>
-               </div>`,
+        subject: `Вас запрошено у групу ${foreman.name}`,
+        html: htmlToSend,
       }
 
       await SendGrid.send(message)
