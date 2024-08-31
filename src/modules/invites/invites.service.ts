@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException, ServiceUnavailableException } from "@nestjs/common"
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException, ServiceUnavailableException } from "@nestjs/common"
 import { UsersService } from "../users/users.service"
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const SendGrid = require("@sendgrid/mail")
@@ -10,6 +10,7 @@ import { Invite } from "./invites.entity"
 import * as process from "node:process"
 import * as fs from "fs"
 import * as handlebars from "handlebars"
+import { Role } from "../common/enums/role.enum"
 
 @Injectable()
 export class InvitesService {
@@ -44,10 +45,21 @@ export class InvitesService {
       throw new NotFoundException(`Scout with ${scoutEmail} not found`)
     }
 
+    if (scout?.ownerEmail) {
+      this.logger.log(`Scout with email ${scoutEmail} already have a group`)
+      throw new BadRequestException(`Scout with email ${scoutEmail} already have a group`)
+    }
+    if (scout.roles.includes(Role.FOREMAN)) {
+      this.logger.log(`can't invite another Foreman to group`)
+      throw new BadRequestException(`You can't add another Foreman to group`)
+    }
+
     const hashedValues = this.createSHA256Hash(JSON.stringify({ scoutEmail: scoutEmail, foremanEmail: foremanEmail, date: new Date() }))
     this.logger.log(`Hash: ${hashedValues}`)
 
-    const invite = await this.invitesRepository.save(new Invite({ scoutEmail: scoutEmail, foremanEmail: foremanEmail, hash: hashedValues }))
+    const invite = await this.invitesRepository.save(
+      new Invite({ scoutEmail: scoutEmail, foremanEmail: foremanEmail, hash: hashedValues, expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) }) // expires in 7 days
+    )
 
     if (!invite) {
       this.logger.log(`Failed to save invite to mongodb`)
@@ -86,6 +98,11 @@ export class InvitesService {
 
     if (!invite) {
       throw new NotFoundException(`invite with hash ${hash} not found`)
+    }
+
+    if (invite.expires && invite.expires < new Date()) {
+      this.logger.log(`Invite with hash ${hash} expired`)
+      throw new BadRequestException(`This invite has expired`)
     }
 
     await this.usersService.addScoutToGroup(invite.scoutEmail, invite.foremanEmail)
