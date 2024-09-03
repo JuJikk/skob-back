@@ -21,10 +21,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
+        cache: 'pnpm'
+    - run: pnpm ci
     - run: |
           touch .env
           echo "${{ secrets.PROD_ENV }}" > .env
-    - run: npm run build
-    - run: npm run start
+    - run: pnpm run build
+    - run: pnpm run start
