@@ -32,7 +32,7 @@ export class AuthController {
     const oneDayInMilliseconds = 24 * 60 * 60 * 1000
     const expires = new Date(Date.now() + oneDayInMilliseconds)
 
-    response.cookie("__skob_jwt", token, { path: "/", domain: this.DOMAIN, secure: true, httpOnly: true, expires: expires, maxAge: oneDayInMilliseconds })
+    response.cookie("__skob_jwt", token, { path: "/", domain: this.DOMAIN, sameSite: "none", secure: true, httpOnly: true, expires: expires, maxAge: oneDayInMilliseconds })
     response.redirect(this.FRONTEND_URL)
   }
 
@@ -41,6 +41,6 @@ export class AuthController {
     this.logger.log("POST: /auth/logout")
     const oneDayInMilliseconds = 24 * 60 * 60 * 1000
     const pastDate = new Date(Date.now() - oneDayInMilliseconds)
-    response.cookie("__skob_jwt", "", { path: "/", domain: this.DOMAIN, secure: true, httpOnly: true, expires: pastDate, maxAge: 0 })
+    response.cookie("__skob_jwt", "", { path: "/", domain: this.DOMAIN, sameSite: "none", secure: true, httpOnly: true, expires: pastDate, maxAge: 0 })
   }
 }
