@@ -28,4 +28,4 @@ jobs:
           touch .env
           echo "${{ secrets.PROD_ENV }}" > .env
     - run: pnpm run build
-    - run: pnpm run start
+    - run: pm2 restart skob-back
