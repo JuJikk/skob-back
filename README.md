@@ -1,4 +1,4 @@
-# Plast Backend
+# Skob Proba Backend
 
 This is the backend for the **Plast-Proba** application, designed to help Foremen (Vykhovnyks) manage Scouts' progress through various tasks and achievements (Probas) within their groups. It provides a RESTful API for managing Scouts, groups, probas, and related data.
 
