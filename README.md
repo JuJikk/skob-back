@@ -104,7 +104,7 @@ docker build . -t skob-backend
 Run the Docker container:
 
 ```bash
-docker run -d -p 3000:3000 --env-file .env plast-backend
+docker run -d -p 3000:3000 --env-file .env skob-backend
 ```
 
 ## License
