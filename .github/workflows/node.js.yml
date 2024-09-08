@@ -24,8 +24,4 @@ jobs:
         cache: 'pnpm'
     - run: corepack enable
     - run: pnpm install
-    - run: |
-          touch .env
-          echo "${{ secrets.PROD_ENV }}" > .env
-    - run: pnpm run build
-    - run: pm2 restart skob-back
+    - run: pnpm run test
