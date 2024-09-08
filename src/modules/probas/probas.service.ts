@@ -71,13 +71,16 @@ export class ProbasService {
   }
 
   private containsZero(obj: Record<string, number[]>): boolean {
-    return Object.values(obj).some((array) => array.includes(0))
+    if (!obj || typeof obj !== "object") {
+      return false
+    }
+    return Object.values(obj).some((array) => Array.isArray(array) && array.includes(0))
   }
 
   private validateCanUpdateProba(scout: User, probaName: string) {
     this.logger.log("validate can update proba")
-    const isZeroProbaIncomplete = this.containsZero(scout.zeroProba)
-    const isFirstProbaIncomplete = this.containsZero(scout.firstProba)
+    const isZeroProbaIncomplete = this.containsZero(scout.zeroProba || {})
+    const isFirstProbaIncomplete = this.containsZero(scout.firstProba || {})
 
     if (probaName === "secondProba") {
       if (isZeroProbaIncomplete) {

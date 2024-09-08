@@ -35,13 +35,13 @@ export class UsersController {
   @Roles(Role.FOREMAN)
   @UsePipes(new ValidationPipe())
   @Get(":email")
-  async getUserByEmail(@Param() params: EmailDto, @User() { email: userEmail }: JwtPayloadDto) {
+  async getUserByEmail(@Param() params: EmailDto, @User() { email: requestEmail }: JwtPayloadDto) {
     this.logger.log("GET: /users/:email")
     const user = await this.userService.getUserByEmail(params.email)
     if (!user) {
       throw new NotFoundException(`User not found with email ${params.email} not found.`)
     }
-    if (user.ownerEmail !== userEmail) {
+    if (user.ownerEmail !== requestEmail) {
       throw new ForbiddenException(`access is denied to a Scout who is not in the your group`)
     }
     return UserDto.toDto(user)
