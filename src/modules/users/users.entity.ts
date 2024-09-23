@@ -10,6 +10,7 @@ export class User {
   @Column() name: string
   @Column() provider: string
   @Column() picture: string
+  @Column() isGuideComplete: boolean
   @Column() sex: Sex
   @Column() roles: Role[] = [Role.SCOUTER]
   @Column() zeroProba = { a: Array(11).fill(0) }

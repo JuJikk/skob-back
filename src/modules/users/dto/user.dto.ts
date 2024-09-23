@@ -31,6 +31,9 @@ export class UserDto {
   @Expose()
   picture: string
 
+  @Expose()
+  isGuideComplete: boolean
+
   static toDto(userEntity: User): UserDto {
     return plainToInstance(UserDto, userEntity, { excludeExtraneousValues: true })
   }
