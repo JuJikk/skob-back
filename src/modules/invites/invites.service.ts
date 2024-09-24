@@ -73,7 +73,7 @@ export class InvitesService {
       const htmlToSend = template({
         scoutName: scout.name,
         foremanName: foreman.name,
-        invitationLink: `${process.env.BACKEND_URL}/invites/${hashedValues}`,
+        invitationLink: `${process.env.BACKEND_URL}/api/invites/${hashedValues}`,
       })
 
       const message = {
